@@ -9,7 +9,7 @@ Local-first menu for the POCO M2 Pro / Android. Runs from Termux, optionally ins
 4. Scan shared storage for byte-identical duplicates using file size plus SHA-256. Android private app data and Android/OBB are excluded. Similar-name candidates are report-only; names alone never prove duplicate content. APK copies can be identified as identical content and reviewed interactively.
 5. Reports are saved to ~/phone-master-reports.
 
-The tool does not change CPU governors, clock limits, kernel/boot partitions, Android settings, or ADB configuration. It does not wipe app data. Cleanup and duplicate removal require explicit interactive confirmation; inspect reports before confirming. Access restrictions may prevent scanning some Android folders.
+The tool does not change CPU governors, clock limits, kernel/boot partitions, Android settings, or ADB configuration. It does not wipe app data. Cleanup and duplicate removal require one explicit confirmation per operation: type YES once to approve the displayed batch. Duplicate cleanup only removes byte-identical files verified by SHA-256, keeps one preferred unsuffixed/short-path copy per group, rechecks content before unlinking, and skips any group containing a protected filename. Similar-name candidates are report-only and never deleted automatically. Access restrictions may prevent scanning some Android folders.
 
 ## Launch
 From a clone of this branch:
