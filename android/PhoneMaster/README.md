@@ -1,15 +1,20 @@
 # POCO Phone Master (Termux)
 
-Local-first menu for the POCO M2 Pro / Android. Runs from Termux, optionally inside tmux. It does not require root or ADB.
+Two-option menu for the POCO M2 Pro / Android. Runs locally in Termux and optionally inside tmux. No root or ADB required.
 
-## Features
-1. Read-only diagnostics: memory/swap, CPU frequencies/governors, thermal sensor labels, process snapshot, storage, ADB/root status.
-2. Audit old files in Termux-owned cache/scratch locations; deletion requires typing DELETE.
-3. Inspect processes owned by the Termux UID and optionally send SIGTERM after confirmation. It refuses to signal processes owned by another UID.
-4. Scan shared storage for byte-identical duplicates using file size plus SHA-256. Android private app data and Android/OBB are excluded. Similar-name candidates are report-only; names alone never prove duplicate content. APK copies can be identified as identical content and reviewed interactively.
-5. Reports are saved to ~/phone-master-reports.
+## Menu
+1. Exit
+2. Run end-to-end
 
-The tool does not change CPU governors, clock limits, kernel/boot partitions, Android settings, or ADB configuration. It does not wipe app data. Cleanup and duplicate removal require one explicit confirmation per operation: type YES once to approve the displayed batch. Duplicate cleanup only removes byte-identical files verified by SHA-256, keeps one preferred unsuffixed/short-path copy per group, rechecks content before unlinking, and skips any group containing a protected filename. Similar-name candidates are report-only and never deleted automatically. Access restrictions may prevent scanning some Android folders.
+The end-to-end run automatically performs all five stages without interactive prompts: (1) CPU/RAM/swap/thermal/process/storage/ADB diagnostics, (2) cleanup of old regular files more than 7 days old in Termux cache/scratch locations, (3) read-only inventory of Termux-owned processes, (4) shared-storage exact-duplicate scan and removal, and (5) saved-report listing. Reports are stored in `~/phone-master-reports`.
+
+## Safety behavior
+- Process inventory is read-only. It does not kill an arbitrary process because unattended mode cannot safely infer which PID the user wants terminated.
+- Cache cleanup is restricted to Termux cache/scratch paths; it does not clean shared storage or Android app data.
+- Duplicate removal requires matching size and SHA-256, rechecks the files immediately before unlinking, keeps one preferred copy, and skips any duplicate group containing a protected filename or extension.
+- Similar-name files are report-only and are never deleted based on names alone.
+- Android private app data/OBB, Android folders, thumbnails, and trash folders are excluded.
+- The tool does not change CPU governors, kernel/boot partitions, Android settings, or ADB configuration.
 
 ## Launch
 From a clone of this branch:
@@ -17,7 +22,7 @@ From a clone of this branch:
 bash android/PhoneMaster/launch.sh
 ```
 
-To detach from tmux: Ctrl+B, then D. Reopen with:
+Detach from tmux with Ctrl+B, then D. Reopen with:
 ```bash
 tmux attach -t phone-master
 ```
