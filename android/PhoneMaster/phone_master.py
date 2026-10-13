@@ -104,7 +104,7 @@ def stop_termux_process():
             print("Refusing: process isn't owned by this Termux UID."); return
         cmdline = Path(f"/proc/{pid}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
         print(f"Target PID {pid}: {cmdline[:300]}")
-        if input("Send SIGTERM to this Termux-owned process? Type TERM: ") == "TERM":
+        if input("Send SIGTERM to this Termux-owned process? Type YES: ") == "YES":
             os.kill(pid, signal.SIGTERM)
             print("SIGTERM sent. No Android/system process was targeted.")
     except Exception as exc: print(f"Could not safely stop process: {exc}")
