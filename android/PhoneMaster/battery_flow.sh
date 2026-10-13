@@ -21,21 +21,31 @@ echo "Build: $(getprop ro.build.display.id 2>/dev/null)"
 echo "Report: $OUT"
 echo "This flow does not force-stop apps, kill processes, alter app standby buckets, change governors, or disable notifications."
 
-section "1. BATTERY SERVICE"
+section "1. BATTERY STATUS (TERMUX:API FALLBACK)"
+if command -v termux-battery-status >/dev/null 2>&1; then
+  termux-battery-status 2>&1 || echo "Termux:API command failed; check the Termux:API companion app."
+else
+  echo "termux-battery-status is not installed."
+  echo "To enable battery readings, install the Termux:API Android companion app from the same source as Termux, then run: pkg install termux-api"
+fi
 if command -v dumpsys >/dev/null 2>&1; then
+  echo "--- Android dumpsys battery (may be permission-restricted) ---"
   dumpsys battery 2>&1 || true
 else
-  echo "dumpsys is unavailable in this Termux environment."
+  echo "dumpsys is unavailable in this Termux environment; this is expected without privileged shell access."
 fi
 
 section "2. BATTERY AND CHARGING TELEMETRY"
+found_supply=0
 for d in /sys/class/power_supply/*; do
   [ -e "$d" ] || continue
+  found_supply=1
   echo "--- $d ---"
   for f in type present online status health capacity capacity_level technology temp voltage_now voltage_max current_now current_avg current_max charge_counter charge_full charge_full_design cycle_count input_current_limit usb_type; do
     if [ -r "$d/$f" ]; then printf '%s=' "$f"; cat "$d/$f" 2>/dev/null || echo "(read failed)"; fi
   done
 done
+[ "$found_supply" -eq 1 ] || echo "No readable power_supply entries were exposed to Termux."
 
 section "3. ANDROID BATTERY STATISTICS"
 if command -v dumpsys >/dev/null 2>&1; then
@@ -49,23 +59,32 @@ else
   echo "dumpsys is unavailable; app-level system battery statistics cannot be collected here."
 fi
 
-section "4. APP INVENTORY"
-echo "Third-party package inventory is attempted read-only; Android may restrict it."
+section "4. APP INVENTORY (BEST-EFFORT)"
+echo "Android often blocks package-manager shell commands from ordinary Termux."
 if command -v pm >/dev/null 2>&1; then
-  pm list packages -3 2>&1 | sort || true
+  pm list packages -3 2>&1 || true
 elif command -v cmd >/dev/null 2>&1; then
-  cmd package list packages -3 2>&1 | sort || true
+  cmd package list packages -3 2>&1 || true
 else
   echo "Package manager CLI unavailable from this app UID."
 fi
+echo "For authoritative app-by-app battery attribution, open Android Settings > Battery > Battery usage."
 
 section "5. SCREEN, CONNECTIVITY AND BACKGROUND CLUES"
 echo "--- screen/display state ---"
-dumpsys power 2>&1 | grep -i -E 'Display Power|Wakefulness|mWakefulness|mIsPowered|Battery Saver|Low Power|Doze' | head -n 100 || true
+if command -v dumpsys >/dev/null 2>&1; then
+  dumpsys power 2>&1 | grep -i -E 'Display Power|Wakefulness|mWakefulness|mIsPowered|Battery Saver|Low Power|Doze' | head -n 100 || true
+else
+  echo "dumpsys unavailable from Termux; inspect Battery Saver and screen settings in Android Settings."
+fi
 echo "--- network interfaces (not traffic attribution) ---"
 cat /proc/net/dev 2>/dev/null || true
-echo "--- processes snapshot ---"
-ps -A -o PID,USER,STAT,%CPU,%MEM,ARGS 2>&1 | head -n 60 || ps -A 2>&1 | head -n 60
+echo "--- processes snapshot (Termux-compatible fallback) ---"
+if ps -A >/dev/null 2>&1; then
+  ps -A 2>&1 | head -n 60
+else
+  ps 2>&1 | head -n 60 || true
+fi
 
 section "6. SAFE BATTERY RECOMMENDATIONS"
 cat <<'EOF'
@@ -83,7 +102,7 @@ EOF
 section "7. WHAT THIS SCRIPT CANNOT DO"
 cat <<'EOF'
 Termux normally lacks the privileged shell permissions required to reliably change global battery policies or set background restrictions for every installed app. This script intentionally does not try hidden settings writes, appops changes, force-stops, package disabling, or root commands.
-Battery stats can be missing, incomplete, permission-denied, or reset by charging/rebooting. One snapshot does not establish which app is responsible; compare Android Settings > Battery > Battery usage and repeat observations over a representative period.
+Battery stats can be missing, incomplete, permission-denied, or reset by charging/rebooting. Termux:API provides battery level/status/temperature/health/current where supported, but it does not expose Android's full per-app battery attribution. Compare Android Settings > Battery > Battery usage and repeat observations over a representative period.
 No settings were changed by this script.
 EOF
 
