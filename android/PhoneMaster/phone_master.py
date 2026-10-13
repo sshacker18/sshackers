@@ -75,7 +75,7 @@ def cleanup_audit():
     print(text[:18000])
     save_report("cleanup-audit", text)
     if not rows: return
-    if input("\nDelete these listed Termux cache/scratch files older than 7 days? Type DELETE: ") != "DELETE":
+    if input("\nDelete these listed Termux cache/scratch files older than 7 days? Type YES: ") != "YES":
         print("Cancelled; no files deleted.")
         return
     deleted = 0
@@ -167,23 +167,41 @@ def scan_files():
     report = "\n".join(out)
     print(report[:26000])
     save_report("duplicate-audit", report)
-    for g in groups:
-        eligible = [p for p in g if not protected(p)]
-        if len(eligible) < 2: continue
-        print("\nVerified identical group:")
-        for i,p in enumerate(g,1): print(f" {i}. {p}" + (" [protected]" if protected(p) else ""))
-        if input("Review this group for duplicate removal? [y/N] ").lower() != "y": continue
-        keep = input("Number to KEEP (blank cancels): ").strip()
-        if not keep.isdigit() or not (1 <= int(keep) <= len(g)):
-            print("Group skipped."); continue
-        keeper = g[int(keep)-1]
-        if protected(keeper):
-            print("Protected file selected as keeper; group skipped to avoid risk."); continue
-        for p in g:
-            if p == keeper or protected(p): continue
-            if input(f"Delete this byte-identical duplicate?\n{p}\nType DELETE: ") == "DELETE":
-                try: p.unlink(); print("Deleted.")
-                except OSError as exc: print(f"Could not delete: {exc}")
+    actionable = [g for g in groups if not any(protected(p) for p in g)]
+    planned = []
+    for g in actionable:
+        # Prefer the original unsuffixed filename, then the shorter path.
+        keeper = sorted(g, key=lambda p: (normalized(p.name) != p.name.lower(), len(str(p)), str(p)))[0]
+        planned.extend((p, keeper) for p in g if p != keeper)
+    protected_groups = sum(1 for g in groups if any(protected(p) for p in g))
+    print(f"\\nExact duplicate groups found: {len(groups)}")
+    print(f"Groups eligible for automatic duplicate cleanup: {len(actionable)}")
+    print(f"Files that would be removed: {len(planned)}")
+    print(f"Groups skipped because a protected filename is present: {protected_groups}")
+    if planned:
+        print("\\nPlanned removals (one preferred copy is kept per group):")
+        for p, keeper in planned:
+            print(f"  REMOVE: {p}\\n  KEEP:   {keeper}")
+        if input("\\nType YES once to delete all listed byte-identical duplicates: ") == "YES":
+            deleted = 0
+            for p, keeper in planned:
+                try:
+                    # Re-check files at deletion time and never follow symlinks.
+                    if p.is_symlink() or not p.is_file() or not keeper.is_file():
+                        print(f"Skipped changed/missing file: {p}")
+                        continue
+                    if p.stat().st_size != keeper.stat().st_size or digest(p) != digest(keeper):
+                        print(f"Skipped; content changed since scan: {p}")
+                        continue
+                    p.unlink()
+                    deleted += 1
+                except OSError as exc:
+                    print(f"Could not delete {p}: {exc}")
+            print(f"Cleanup complete. Deleted {deleted} verified duplicate copies.")
+        else:
+            print("Cancelled; no duplicate files deleted.")
+    else:
+        print("No eligible exact-duplicate files to remove.")
     print("Similar-name files are report-only; they are never deleted based on name alone.")
 
 def menu():
