@@ -128,10 +128,19 @@ def duplicates():
     out += ["",f"Exact duplicate groups: {len(groups)}",f"Protected groups skipped: {skipped_groups}",f"Verified duplicate copies deleted: {deleted}",f"Skipped/changed files: {skipped}",f"Read errors: {errors}","Similar-name candidates are never deleted automatically.","Android private/app data and OBB, Android folders, thumbnails and trash folders excluded."]
     report="\n".join(out); print(report[:22000]); save_report("duplicate-audit",report)
 
+def battery_flow():
+    script = Path(__file__).with_name("battery_flow.sh")
+    if not script.is_file():
+        raise FileNotFoundError(f"Battery Flow script not found: {script}")
+    print("Starting read-only battery diagnosis and recommendations...")
+    p = subprocess.run(["bash", str(script)], text=True)
+    if p.returncode != 0:
+        print(f"Battery Flow exited with status {p.returncode}. Check its report for details.")
+
 def run_all():
     print("\n=== END-TO-END START ===")
     status=[]
-    for name,fn in [("Diagnostics",diagnostics),("Termux cache cleanup",cleanup),("Process inventory",process_audit),("Duplicate scan/cleanup",duplicates)]:
+    for name,fn in [("Diagnostics",diagnostics),("Termux cache cleanup",cleanup),("Process inventory",process_audit),("Duplicate scan/cleanup",duplicates),("Battery diagnosis and optimization recommendations",battery_flow)]:
         print(f"\n=== {name} ===")
         try: fn(); status.append(name+": completed")
         except Exception as e: status.append(name+f": ERROR {type(e).__name__}: {e}"); print(status[-1])
