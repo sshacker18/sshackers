@@ -25,3 +25,10 @@ Likely technician inspection order: known-good charger/cable; USB-C port debris/
 
 ## Performance strategy
 This branch starts with measurement rather than aggressive "RAM booster" tweaks. Android already manages memory and background work; indiscriminate task killing, clearing app caches repeatedly, forcing CPU governors, disabling thermal controls, or applying random build.prop/kernel tweaks can worsen smoothness, stability, heat and battery life. Use the report to identify a real bottleneck before changing settings.
+
+
+## Battery Flow
+
+`battery_flow.sh` is a separate read-only battery audit. It attempts to collect Android battery service state, readable power-supply telemetry, `dumpsys batterystats` output, third-party package inventory, display/power clues, network-interface counters, and a process snapshot. It saves its report to `~/phone-battery-reports/` and prints safe, conditional recommendations. The Phone Master end-to-end workflow now invokes this Battery Flow after diagnostics, cleanup, process inventory, and duplicate scanning.
+
+No global battery settings or per-app restrictions are changed automatically. Termux is not the privileged Android shell, and broad app restrictions can break notifications, background sync, alarms, or messaging. Use Android Settings > Battery > Battery usage to cross-check any app-level clues and apply restrictions selectively.
