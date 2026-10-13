@@ -34,7 +34,7 @@ def diagnostics():
         command(["sh", "-c", "getprop ro.product.model; getprop ro.product.device; getprop ro.build.display.id; uname -a"]))
     add("MEMORY", command(["sh", "-c", "grep -E 'MemTotal|MemAvailable|Cached|SwapTotal|SwapFree' /proc/meminfo"]))
     add("CPU FREQUENCY LIMITS", command(["sh", "-c",
-        "for f in /sys/devices/system/cpu/cpufreq/policy*/scaling_{min,max}_freq; do [ -r \"$f\" ] && echo \"$f: $(cat \"$f\")\"; done"]))
+        "for f in /sys/devices/system/cpu/cpufreq/policy*/scaling_min_freq /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq; do [ -r \"$f\" ] && echo \"$f: $(cat \"$f\")\"; done"]))
     add("CPU FREQUENCIES / GOVERNORS", command(["sh", "-c",
         "for f in /sys/devices/system/cpu/cpu[0-7]/cpufreq/scaling_cur_freq /sys/devices/system/cpu/cpu[0-7]/cpufreq/scaling_governor; do [ -r \"$f\" ] && echo \"$f: $(cat \"$f\")\"; done"]))
     add("TOP SNAPSHOT", command(["sh", "-c", "top -b -n 1 2>&1 | head -n 45"]))
