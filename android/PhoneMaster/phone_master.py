@@ -131,10 +131,10 @@ def duplicates():
 def optimize_chatgpt():
     """Open ChatGPT and report memory without killing processes."""
     package = "com.openai.chatgpt"
-    print("\\n=== CHATGPT SMOOTH MODE ===")
+    print("\n=== CHATGPT SMOOTH MODE ===")
     print("No root, force-stop, process killing, or app-data deletion.")
     before = command(["grep", "-E", "MemTotal|MemAvailable|Cached|SwapFree", "/proc/meminfo"], timeout=5)
-    print("\\n--- MEMORY BEFORE ---\\n" + before)
+    print("\n--- MEMORY BEFORE ---\n" + before)
     installed = command(["pm", "path", package], timeout=5)
     if "package:" not in installed:
         print("ChatGPT package not confirmed installed; open it manually and retry.")
@@ -142,9 +142,9 @@ def optimize_chatgpt():
     launch = command(["monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1"], timeout=5)
     time.sleep(1)
     after = command(["grep", "-E", "MemTotal|MemAvailable|Cached|SwapFree", "/proc/meminfo"], timeout=5)
-    print("\\n--- OPEN CHATGPT ---\\n" + launch)
-    print("\\n--- MEMORY AFTER ---\\n" + after)
-    report = "CHATGPT SMOOTH MODE\\nNo processes killed; no app data deleted.\\n\\nBEFORE\\n" + before + "\\n\\nLAUNCH\\n" + launch + "\\n\\nAFTER\\n" + after + "\\n\\nAndroid controls app memory; speed increase is not guaranteed."
+    print("\n--- OPEN CHATGPT ---\n" + launch)
+    print("\n--- MEMORY AFTER ---\n" + after)
+    report = "CHATGPT SMOOTH MODE\nNo processes killed; no app data deleted.\n\nBEFORE\n" + before + "\n\nLAUNCH\n" + launch + "\n\nAFTER\n" + after + "\n\nAndroid controls app memory; speed increase is not guaranteed."
     save_report("chatgpt-smooth-mode", report)
 
 def run_all():
@@ -161,7 +161,7 @@ def run_all():
 
 def menu():
     while True:
-        print("\\n======= POCO PHONE MASTER =======")
+        print("\n======= POCO PHONE MASTER =======")
         print("1. Optimize ChatGPT")
         print("2. Run end-to-end")
         print("0. Exit")
