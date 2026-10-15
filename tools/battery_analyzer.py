@@ -114,7 +114,7 @@ def analyze(samples: list[dict[str, Any]]) -> dict[str, Any]:
         recommendations.append("No sample reached 40 °C; the sampled values alone cannot rule out brief temperature spikes.")
     if end["level_percent"] <= 20:
         recommendations.append("Charge is at or below 20%. Enable Android Battery Saver if you need the remaining charge to last.")
-    if any(s["health"] == "overheat" for s in samples):
+    if any(s.get("health", "unknown") == "overheat" for s in samples):
         recommendations.append("Android reported battery health as overheat at least once. Stop heavy use/charging and investigate if it persists.")
     return {
         "sample_count": len(samples),
