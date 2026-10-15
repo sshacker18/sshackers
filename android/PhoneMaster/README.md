@@ -1,6 +1,6 @@
 # POCO Phone Master (Termux)
 
-Two-option menu for the POCO M2 Pro / Android. Runs locally in Termux and optionally inside tmux. No root or ADB required.
+Numbered menu for the POCO M2 Pro / LineageOS Android 15. Runs locally in Termux and optionally inside tmux. No root or ADB required.
 
 ## Menu
 1. Optimize ChatGPT (launch app and capture before/after memory report; no force-stop or private-data deletion)
