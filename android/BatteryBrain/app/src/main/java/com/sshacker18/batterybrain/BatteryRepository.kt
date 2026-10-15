@@ -58,7 +58,9 @@ object BatteryRepository {
             plugged = pluggedRaw != 0,
             status = statusName(statusRaw),
             health = healthName(healthRaw),
-            currentNowUa = available(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)),
+            currentNowUa = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW).let {
+                if (it == Int.MIN_VALUE) null else it
+            },
             chargeCounterUah = available(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER))
         )
     }
