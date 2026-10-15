@@ -39,6 +39,7 @@ def load_samples(path: Path) -> list[dict[str, Any]]:
                     "plugged": plugged,
                     "temperature_c": temp,
                     "status": (row.get("status") or "unknown").strip().lower(),
+                    "health": (row.get("health") or "unknown").strip().lower(),
                     "voltage_mv": optional_float(row.get("voltage_mv")),
                     "current_now_ua": optional_float(row.get("current_now_ua")),
                 })
