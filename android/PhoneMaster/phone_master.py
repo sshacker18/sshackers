@@ -128,6 +128,25 @@ def duplicates():
     out += ["",f"Exact duplicate groups: {len(groups)}",f"Protected groups skipped: {skipped_groups}",f"Verified duplicate copies deleted: {deleted}",f"Skipped/changed files: {skipped}",f"Read errors: {errors}","Similar-name candidates are never deleted automatically.","Android private/app data and OBB, Android folders, thumbnails and trash folders excluded."]
     report="\n".join(out); print(report[:22000]); save_report("duplicate-audit",report)
 
+def optimize_chatgpt():
+    """Open ChatGPT and report memory without killing processes."""
+    package = "com.openai.chatgpt"
+    print("\\n=== CHATGPT SMOOTH MODE ===")
+    print("No root, force-stop, process killing, or app-data deletion.")
+    before = command(["grep", "-E", "MemTotal|MemAvailable|Cached|SwapFree", "/proc/meminfo"], timeout=5)
+    print("\\n--- MEMORY BEFORE ---\\n" + before)
+    installed = command(["pm", "path", package], timeout=5)
+    if "package:" not in installed:
+        print("ChatGPT package not confirmed installed; open it manually and retry.")
+        return
+    launch = command(["monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1"], timeout=5)
+    time.sleep(1)
+    after = command(["grep", "-E", "MemTotal|MemAvailable|Cached|SwapFree", "/proc/meminfo"], timeout=5)
+    print("\\n--- OPEN CHATGPT ---\\n" + launch)
+    print("\\n--- MEMORY AFTER ---\\n" + after)
+    report = "CHATGPT SMOOTH MODE\\nNo processes killed; no app data deleted.\\n\\nBEFORE\\n" + before + "\\n\\nLAUNCH\\n" + launch + "\\n\\nAFTER\\n" + after + "\\n\\nAndroid controls app memory; speed increase is not guaranteed."
+    save_report("chatgpt-smooth-mode", report)
+
 def run_all():
     print("\n=== END-TO-END START ===")
     status=[]
@@ -142,10 +161,26 @@ def run_all():
 
 def menu():
     while True:
-        print("\n======= POCO PHONE MASTER =======\n1. Exit\n2. Run end-to-end\n=================================")
-        choice=input("Choose 1-2: ").strip()
-        if choice=="1": print("Phone Master exited."); return
-        if choice=="2": run_all()
-        else: print("Invalid choice. Enter 1 or 2.")
+        print("\\n======= POCO PHONE MASTER =======")
+        print("1. Optimize ChatGPT")
+        print("2. Run end-to-end")
+        print("0. Exit")
+        print("=================================")
+        choice = input("Choose 0-2: ").strip()
+        if choice == "0":
+            print("Phone Master exited.")
+            return
+        elif choice == "1":
+            try:
+                optimize_chatgpt()
+            except Exception as e:
+                print("ChatGPT option error: " + type(e).__name__ + ": " + str(e))
+        elif choice == "2":
+            try:
+                run_all()
+            except Exception as e:
+                print("End-to-end error: " + type(e).__name__ + ": " + str(e))
+        else:
+            print("Invalid choice. Enter 0, 1, or 2.")
 
 if __name__=="__main__": menu()
