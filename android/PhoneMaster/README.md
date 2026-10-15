@@ -3,8 +3,9 @@
 Two-option menu for the POCO M2 Pro / Android. Runs locally in Termux and optionally inside tmux. No root or ADB required.
 
 ## Menu
-1. Exit
+1. Optimize ChatGPT (launch app and capture before/after memory report; no force-stop or private-data deletion)
 2. Run end-to-end
+0. Exit
 
 The end-to-end run automatically performs all five stages without interactive prompts: (1) CPU/RAM/swap/thermal/process/storage/ADB diagnostics, (2) cleanup of old regular files more than 7 days old in Termux cache/scratch locations, (3) read-only inventory of Termux-owned processes, (4) shared-storage exact-duplicate scan and removal, and (5) saved-report listing. Reports are stored in `~/phone-master-reports`.
 
