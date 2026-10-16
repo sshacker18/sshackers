@@ -1,0 +1,51 @@
+name: Chrome RAM Lab CI
+
+on:
+  push:
+    branches:
+      - feat/chrome-ram-lab
+    paths:
+      - "chrome-ram-lab/**"
+      - ".github/workflows/chrome-ram-lab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrome-ram-lab-ci
+  cancel-in-progress: true
+
+jobs:
+  playwright-smoke-test:
+    name: Playwright Chromium smoke test
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Show tool versions
+        shell: pwsh
+        run: |
+          python --version
+          python -m pip --version
+
+      - name: Install pinned Playwright dependency
+        run: python -m pip install -r chrome-ram-lab/playwright-demo/requirements.txt
+
+      - name: Install Chromium only
+        run: python -m playwright install chromium
+
+      - name: Validate Python syntax
+        run: python -m compileall -q chrome-ram-lab/playwright-demo/smoke_test.py
+
+      - name: Run browser smoke test
+        working-directory: chrome-ram-lab/playwright-demo
+        run: python smoke_test.py
