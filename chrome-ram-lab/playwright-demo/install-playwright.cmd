@@ -11,7 +11,7 @@ echo.
 
 where py >nul 2>&1
 if errorlevel 1 (
-  echo Python Launcher (py.exe) was not found.
+  echo Python Launcher py.exe was not found.
   echo Install Python 3.13 with Windows Package Manager:
   echo   winget install --id Python.Python.3.13 -e --source winget
   echo Then close and reopen CMD and run this script again.
